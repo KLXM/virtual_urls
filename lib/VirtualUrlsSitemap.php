@@ -1,5 +1,18 @@
 <?php
 
+namespace FriendsOfRedaxo\VirtualUrl;
+
+use rex;
+use rex_clang;
+use rex_escape;
+use rex_extension_point;
+use rex_media;
+use rex_media_manager;
+use rex_sql;
+use rex_string;
+use rex_yrewrite;
+use rex_yrewrite_domain;
+
 class VirtualUrlsSitemap
 {
     /**
@@ -23,7 +36,7 @@ class VirtualUrlsSitemap
         $sql = rex_sql::factory();
         $profiles = $sql->getArray(
             'SELECT * FROM ' . rex::getTable('virtual_urls_profiles') . 
-            ' WHERE default_category_id > 0 AND (domain = :domain OR domain = :empty)',
+            ' WHERE status = 1 AND default_category_id > 0 AND (domain = :domain OR domain = :empty)',
             ['domain' => $domain->getName(), 'empty' => '']
         );
 
@@ -103,13 +116,40 @@ class VirtualUrlsSitemap
                     }
                 }
 
-                $sitemap[] =
+                $sitemapEntry =
                     "\n" . '<url>' .
                     "\n\t" . '<loc>' . rex_escape($fullUrl) . '</loc>' .
-                    "\n\t" . '<lastmod>' . $lastmod . '</lastmod>' .
-                    "\n\t" . '<changefreq>weekly</changefreq>' .
-                    "\n\t" . '<priority>0.5</priority>' .
+                    "\n\t" . '<lastmod>' . $lastmod . '</lastmod>';
+
+                // SEO Image
+                $imageField = $profile['seo_image_field'] ?? '';
+                if ($imageField && $item->hasValue($imageField)) {
+                    $image = $item->getValue($imageField);
+                    if ($image) {
+                        $images = explode(',', $image);
+                        $image = array_shift($images);
+                        $media = rex_media::get($image);
+                        if ($media) {
+                            $mediaUrl = rtrim($domain->getUrl(), '/') . rex_media_manager::getUrl('yrewrite_seo_image', $image);
+                            $sitemapEntry .= "\n\t" . '<image:image>' .
+                                "\n\t\t" . '<image:loc>' . rex_escape($mediaUrl) . '</image:loc>';
+                            if ($media->getTitle()) {
+                                $sitemapEntry .= "\n\t\t" . '<image:title>' . rex_escape($media->getTitle()) . '</image:title>';
+                            }
+                            $sitemapEntry .= "\n\t" . '</image:image>';
+                        }
+                    }
+                }
+
+                $changefreq = $profile['sitemap_changefreq'] ?? 'weekly';
+                $priority = $profile['sitemap_priority'] ?? '0.5';
+
+                $sitemapEntry .=
+                    "\n\t" . '<changefreq>' . rex_escape($changefreq) . '</changefreq>' .
+                    "\n\t" . '<priority>' . rex_escape($priority) . '</priority>' .
                     "\n" . '</url>';
+
+                $sitemap[] = $sitemapEntry;
             }
         }
 

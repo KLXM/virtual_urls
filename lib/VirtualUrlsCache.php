@@ -1,5 +1,14 @@
 <?php
 
+namespace FriendsOfRedaxo\VirtualUrl;
+
+use rex;
+use rex_addon;
+use rex_extension;
+use rex_extension_point;
+use rex_sql;
+use rex_yrewrite;
+
 class VirtualUrlsCache
 {
     public static function init()

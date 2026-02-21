@@ -3,6 +3,7 @@
 // Tabelle anlegen/aktualisieren via rex_sql_table
 rex_sql_table::get(rex::getTable('virtual_urls_profiles'))
     ->ensureColumn(new rex_sql_column('id', 'int(11) unsigned', false, null, 'auto_increment'))
+    ->ensureColumn(new rex_sql_column('status', 'tinyint(1)', false, '1'))
     ->ensureColumn(new rex_sql_column('clang_id', 'int(11)', false, '-1'))
     ->ensureColumn(new rex_sql_column('domain', 'varchar(255)', false, ''))
     ->ensureColumn(new rex_sql_column('table_name', 'varchar(255)', false, ''))
@@ -14,5 +15,10 @@ rex_sql_table::get(rex::getTable('virtual_urls_profiles'))
     ->ensureColumn(new rex_sql_column('relation_slug_field', 'varchar(255)', true))
     ->ensureColumn(new rex_sql_column('default_category_id', 'int(11) unsigned', true))
     ->ensureColumn(new rex_sql_column('sitemap_filter', 'varchar(255)', true))
+    ->ensureColumn(new rex_sql_column('sitemap_changefreq', 'varchar(20)', false, 'weekly'))
+    ->ensureColumn(new rex_sql_column('sitemap_priority', 'varchar(5)', false, '0.5'))
+    ->ensureColumn(new rex_sql_column('seo_title_field', 'varchar(255)', true))
+    ->ensureColumn(new rex_sql_column('seo_description_field', 'varchar(255)', true))
+    ->ensureColumn(new rex_sql_column('seo_image_field', 'varchar(255)', true))
     ->setPrimaryKey('id')
     ->ensure();

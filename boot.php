@@ -1,5 +1,10 @@
 <?php
 
+use FriendsOfRedaxo\VirtualUrl\VirtualUrls;
+use FriendsOfRedaxo\VirtualUrl\VirtualUrlsCache;
+use FriendsOfRedaxo\VirtualUrl\VirtualUrlsSeo;
+use FriendsOfRedaxo\VirtualUrl\VirtualUrlsSitemap;
+
 // 1. Register YForm Value (Global, needed in Backend & Frontend)
 if (rex_addon::get('yform')->isAvailable()) {
     // 2. Register Cache Buster (Global, needed in Backend mainly)
@@ -14,6 +19,9 @@ if (rex_addon::get('yrewrite')->isAvailable()) {
         rex_extension::register('YREWRITE_PREPARE', function (rex_extension_point $ep) {
             return VirtualUrls::handle($ep);
         });
+        
+        // SEO Tags Integration
+        rex_extension::register('YREWRITE_SEO_TAGS', [VirtualUrlsSeo::class, 'handleSeoTags']);
     }
     
     // Sitemap Integration

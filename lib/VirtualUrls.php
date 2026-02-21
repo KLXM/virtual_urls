@@ -1,5 +1,16 @@
 <?php
 
+namespace FriendsOfRedaxo\VirtualUrl;
+
+use rex;
+use rex_clang;
+use rex_extension_point;
+use rex_sql;
+use rex_string;
+use rex_yform_manager_dataset;
+use rex_yrewrite;
+use rex_yrewrite_domain;
+
 class VirtualUrls
 {
     /**
@@ -21,7 +32,7 @@ class VirtualUrls
         $sql = rex_sql::factory();
         $profiles = $sql->getArray(
             'SELECT * FROM ' . rex::getTable('virtual_urls_profiles') . 
-            ' WHERE (domain = :domain OR domain = :empty) AND (clang_id = :clang OR clang_id = -1)',
+            ' WHERE status = 1 AND (domain = :domain OR domain = :empty) AND (clang_id = :clang OR clang_id = -1)',
             ['domain' => $domain->getName(), 'empty' => '', 'clang' => $clangId]
         );
 

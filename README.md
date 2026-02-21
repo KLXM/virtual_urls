@@ -12,6 +12,7 @@ Dieses AddOn ermöglicht es, YForm-Datensätze (z.B. News, Produkte, Mitarbeiter
 - 🔗 **Relation-URLs:** Optionale Kategorie-Segmente in der URL (`/news/sport/mein-artikel`)
 - 🌐 **Mehrsprachigkeit:** Pro Sprache eigene Profile mit unterschiedlichen Triggern und Slug-Feldern
 - 🏢 **Multi-Domain:** Profile können auf einzelne Domains beschränkt werden
+- 🔍 **SEO-Integration:** Automatische Generierung von Canonical-URLs, Meta-Titles, Descriptions und Images
 - 🧪 **URL-Tester:** Backend-Tool zum Testen und Debuggen von URLs
 - 📖 **Helper-Klasse:** API zum Erzeugen von URLs und Links in Modulen/Templates
 
@@ -51,6 +52,7 @@ Unter **Virtual URLs → Profile** ein neues Profil erstellen:
 
 | Feld | Pflicht | Beschreibung |
 |---|---|---|
+| **Status** | Ja | Aktiv/Inaktiv Schalter für das Profil |
 | **Sprache** | Nein | Sprache für dieses Profil. „Alle Sprachen" = sprachunabhängig |
 | **Domain** | Nein | Auf eine Domain beschränken. „Alle Domains" = überall aktiv |
 | **YForm Tabelle** | Ja | Name der Datentabelle, z.B. `rex_news` |
@@ -62,6 +64,11 @@ Unter **Virtual URLs → Profile** ein neues Profil erstellen:
 | **Relation Tabelle** | Nein | Tabelle der Relation (z.B. `rex_news_category`) |
 | **Relation Slug Feld** | Nein | Feld für den URL-Teil (z.B. `name`), wird automatisch normalisiert |
 | **Sitemap Filter** | Nein | SQL WHERE-Klausel mit optionalen Platzhaltern |
+| **Sitemap Changefreq** | Nein | Wie oft ändert sich der Inhalt voraussichtlich? |
+| **Sitemap Priority** | Nein | Priorität der URLs im Vergleich zu anderen URLs (0.0 bis 1.0) |
+| **SEO Title Feld** | Nein | Spalte für den Meta-Title (z.B. `title`). Leer = Standard |
+| **SEO Description Feld** | Nein | Spalte für die Meta-Description. HTML wird entfernt, Text gekürzt |
+| **SEO Image Feld** | Nein | Spalte für das Meta-Image (z.B. `image`) |
 
 ### 2. Slug-Feld einrichten
 
@@ -112,6 +119,8 @@ Die Relation wird automatisch normalisiert: „Sport & Fitness" → `sport-fitne
 ### Datensatz im Renderer-Artikel abrufen
 
 ```php
+use FriendsOfRedaxo\VirtualUrl\VirtualUrls;
+
 $data = VirtualUrls::getCurrentData();
 $profile = VirtualUrls::getCurrentProfile();
 
@@ -126,6 +135,8 @@ if ($data) {
 ### URLs und Links erzeugen
 
 ```php
+use FriendsOfRedaxo\VirtualUrl\VirtualUrlsHelper;
+
 // URL für einen Datensatz
 $url = VirtualUrlsHelper::getUrl('rex_news', 42);
 // → "/news/mein-artikel" oder "/news/sport/mein-artikel"
@@ -155,6 +166,8 @@ foreach ($urls as $item) {
 ### URL programmatisch testen
 
 ```php
+use FriendsOfRedaxo\VirtualUrl\VirtualUrlsHelper;
+
 $result = VirtualUrlsHelper::testUrl('/news/sport/mein-artikel', 'wdfv.de');
 
 if ($result['resolved']) {

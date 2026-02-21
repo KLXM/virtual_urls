@@ -1,5 +1,7 @@
 <?php
 
+use FriendsOfRedaxo\VirtualUrl\VirtualUrlsHelper;
+
 $package = rex_addon::get('virtual_urls');
 
 // URL-Tester

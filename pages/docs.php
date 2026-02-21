@@ -3,17 +3,23 @@
 $content = '
 <h3>URL erzeugen</h3>
 <p>Gibt die vollständige URL für einen Datensatz zurück:</p>
-<pre><code>$url = VirtualUrlsHelper::getUrl(\'rex_news\', 42);
+<pre><code>use FriendsOfRedaxo\VirtualUrl\VirtualUrlsHelper;
+
+$url = VirtualUrlsHelper::getUrl(\'rex_news\', 42);
 // z.B. "/news/mein-artikel" oder "/news/sport/mein-artikel"</code></pre>
 
 <h3>URL aus Dataset-Objekt</h3>
 <p>Wenn du bereits ein YForm-Dataset hast:</p>
-<pre><code>$dataset = rex_yform_manager_dataset::get(42, \'rex_news\');
+<pre><code>use FriendsOfRedaxo\VirtualUrl\VirtualUrlsHelper;
+
+$dataset = rex_yform_manager_dataset::get(42, \'rex_news\');
 $url = VirtualUrlsHelper::getUrlByDataset($dataset);
 </code></pre>
 
 <h3>HTML-Link erzeugen</h3>
-<pre><code>// Einfacher Link
+<pre><code>use FriendsOfRedaxo\VirtualUrl\VirtualUrlsHelper;
+
+// Einfacher Link
 $link = VirtualUrlsHelper::getLink(\'rex_news\', 42, \'Zum Artikel\');
 // &lt;a href="/news/mein-artikel"&gt;Zum Artikel&lt;/a&gt;
 
@@ -24,7 +30,9 @@ $link = VirtualUrlsHelper::getLink(\'rex_news\', 42, \'Mehr lesen\', [\'class\' 
 
 <h3>URL-Liste abrufen</h3>
 <p>Alle URLs einer Tabelle holen (z.B. für Übersichtsseiten):</p>
-<pre><code>// Alle aktiven News
+<pre><code>use FriendsOfRedaxo\VirtualUrl\VirtualUrlsHelper;
+
+// Alle aktiven News
 $urls = VirtualUrlsHelper::getUrlList(\'rex_news\', \'status = 1\', \'date DESC\');
 
 foreach ($urls as $item) {
@@ -37,7 +45,9 @@ foreach ($urls as $item) {
 
 <h3>Aktuellen Datensatz im Modul abrufen</h3>
 <p>Im Renderer-Artikel (Modul-Output):</p>
-<pre><code>$data = VirtualUrls::getCurrentData();
+<pre><code>use FriendsOfRedaxo\VirtualUrl\VirtualUrls;
+
+$data = VirtualUrls::getCurrentData();
 $profile = VirtualUrls::getCurrentProfile();
 
 if ($data) {
@@ -47,7 +57,9 @@ if ($data) {
 </code></pre>
 
 <h3>URL testen (programmatisch)</h3>
-<pre><code>$result = VirtualUrlsHelper::testUrl(\'/news/sport/mein-artikel\', \'wdfv.de\');
+<pre><code>use FriendsOfRedaxo\VirtualUrl\VirtualUrlsHelper;
+
+$result = VirtualUrlsHelper::testUrl(\'/news/sport/mein-artikel\', \'wdfv.de\');
 
 if ($result[\'resolved\']) {
     echo \'Datensatz ID: \' . $result[\'dataset\']->getId();
@@ -55,6 +67,7 @@ if ($result[\'resolved\']) {
 } else {
     echo \'Fehler: \' . $result[\'message\'];
 }</code></pre>
+
 
 <hr>
 
@@ -83,6 +96,7 @@ if ($result[\'resolved\']) {
 <tr><th>Feld</th><th>Pflicht</th><th>Beschreibung</th></tr>
 </thead>
 <tbody>
+<tr><td><strong>Status</strong></td><td>Ja</td><td>Aktiv/Inaktiv Schalter für das Profil</td></tr>
 <tr><td><strong>Domain</strong></td><td>Nein</td><td>Optional: auf eine Domain beschränken</td></tr>
 <tr><td><strong>YForm Tabelle</strong></td><td>Ja</td><td>Tabellenname, z.B. <code>rex_news</code></td></tr>
 <tr><td><strong>URL Trigger Segment</strong></td><td>Ja</td><td>Pfad-Segment, das die virtuelle URL einleitet, z.B. <code>news</code></td></tr>
@@ -93,6 +107,11 @@ if ($result[\'resolved\']) {
 <tr><td><strong>Relation Tabelle</strong></td><td>Nein</td><td>Tabelle der Relation (z.B. <code>rex_news_category</code>)</td></tr>
 <tr><td><strong>Relation Slug Feld</strong></td><td>Nein</td><td>Feld für den URL-Teil (z.B. <code>name</code>), wird automatisch normalisiert</td></tr>
 <tr><td><strong>Sitemap Filter</strong></td><td>Nein</td><td>SQL WHERE-Klausel, Platzhalter: <code>###NOW###</code>, <code>###CURRENT_DATE###</code></td></tr>
+<tr><td><strong>Sitemap Changefreq</strong></td><td>Nein</td><td>Wie oft ändert sich der Inhalt voraussichtlich?</td></tr>
+<tr><td><strong>Sitemap Priority</strong></td><td>Nein</td><td>Priorität der URLs im Vergleich zu anderen URLs (0.0 bis 1.0)</td></tr>
+<tr><td><strong>SEO Title Feld</strong></td><td>Nein</td><td>Spalte für den Meta-Title (z.B. <code>title</code>). Leer = Standard</td></tr>
+<tr><td><strong>SEO Description Feld</strong></td><td>Nein</td><td>Spalte für die Meta-Description. HTML wird entfernt, Text gekürzt</td></tr>
+<tr><td><strong>SEO Image Feld</strong></td><td>Nein</td><td>Spalte für das Meta-Image (z.B. <code>image</code>)</td></tr>
 </tbody>
 </table>
 

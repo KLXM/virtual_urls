@@ -1,5 +1,14 @@
 <?php
 
+namespace FriendsOfRedaxo\VirtualUrl;
+
+use rex;
+use rex_clang;
+use rex_escape;
+use rex_sql;
+use rex_string;
+use rex_yform_manager_dataset;
+
 /**
  * Helper-Klasse zum Erzeugen von virtuellen URLs und Links.
  *
@@ -276,7 +285,7 @@ class VirtualUrlsHelper
     public static function getAllProfiles(): array
     {
         $sql = rex_sql::factory();
-        return $sql->getArray('SELECT * FROM ' . rex::getTable('virtual_urls_profiles'));
+        return $sql->getArray('SELECT * FROM ' . rex::getTable('virtual_urls_profiles') . ' WHERE status = 1');
     }
 
     /**

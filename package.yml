@@ -23,6 +23,9 @@ page:
         tools:
             title: 'Slug-Generator'
             icon: rex-icon fa-cogs
+        ajax.columns:
+            title: 'Ajax Columns'
+            hidden: true
         docs:
             title: 'Hilfe'
             icon: rex-icon fa-question-circle
