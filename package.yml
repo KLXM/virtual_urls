@@ -1,0 +1,15 @@
+package: virtual_urls
+version: '0.1.0'
+author: Friends Of REDAXO
+supportpage: https://github.com/FriendsOfREDAXO/virtual_urls
+
+requires:
+    redaxo: '^5.10.0'
+    packages:
+        yrewrite: '>=2.0'
+        yform: '>=4.0'
+
+page:
+    title: 'Virtual URLs'
+    perm: admin
+    icon: rex-icon fa-road
