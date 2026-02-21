@@ -1,18 +1,3 @@
-
-## Unterschiede zu anderen URL-Addons
-
-Im Gegensatz zum klassischen URL Addon (yrewrite_url) arbeitet dieses Addon strikt mit YForm-Tabellen und benötigt für jede Tabelle ein explizites Slug-Feld. Das bedeutet:
-
-- **Slug-Feld erforderlich:** Für jede angebundene YForm-Tabelle muss ein eindeutiges Slug-Feld existieren, das die sprechende URL für den jeweiligen Datensatz enthält.
-- **Keine Profile pro Pfad nötig:** Anders als beim URL Addon, wo für jeden Pfad (z.B. jede Kategorie oder jedes Modul) ein eigenes Profil angelegt werden muss, genügt bei Virtual URLs ein Profil pro Tabelle. Das Routing ist dadurch deutlich einfacher und flexibler.
-- **Strikte YForm-Bindung:** Aktuell funktioniert das Addon ausschließlich mit YForm-Tabellen. Eigene, nicht-YForm-Tabellen werden (noch) nicht unterstützt.
-
-Das klassische URL Addon ist universeller einsetzbar und kann mit beliebigen Tabellen und Strukturen arbeiten, benötigt aber für komplexe Strukturen oft viele Profile und individuelle Konfigurationen. Virtual URLs ist auf YForm spezialisiert und setzt auf ein zentrales, einfaches Profil-Konzept pro Tabelle.
-
-Eine parallele Nutzung beider Addons ist technisch möglich, sollte aber mit Bedacht erfolgen, um Routing-Konflikte zu vermeiden.
-## Lizenz
-
-MIT License – siehe [LICENSE](LICENSE)
 # Unterschiede: URL Addon vs. Virtual URLs Addon
 
 Dieses Addon (Virtual URLs) und das klassische URL Addon verfolgen unterschiedliche Ansätze zur Generierung und Verwaltung von sprechenden URLs in REDAXO. Nachfolgend ein neutraler Vergleich der Konzepte und Funktionsweisen:
@@ -54,6 +39,19 @@ Dieses AddOn ermöglicht es, YForm-Datensätze (z.B. News, Produkte, Mitarbeiter
 - 🏢 **Multi-Domain:** Profile können auf einzelne Domains beschränkt werden
 - 🧪 **URL-Tester:** Backend-Tool zum Testen und Debuggen von URLs
 - 📖 **Helper-Klasse:** API zum Erzeugen von URLs und Links in Modulen/Templates
+
+
+## Unterschiede zu anderen URL-Addons
+
+Im Gegensatz zum klassischen URL Addon (yrewrite_url) arbeitet dieses Addon strikt mit YForm-Tabellen und benötigt für jede Tabelle ein explizites Slug-Feld. Das bedeutet:
+
+- **Slug-Feld erforderlich:** Für jede angebundene YForm-Tabelle muss ein eindeutiges Slug-Feld existieren, das die sprechende URL für den jeweiligen Datensatz enthält.
+- **Keine Profile pro Pfad nötig:** Anders als beim URL Addon, wo für jeden Pfad (z.B. jede Kategorie oder jedes Modul) ein eigenes Profil angelegt werden muss, genügt bei Virtual URLs ein Profil pro Tabelle. Das Routing ist dadurch deutlich einfacher und flexibler.
+- **Strikte YForm-Bindung:** Aktuell funktioniert das Addon ausschließlich mit YForm-Tabellen. Eigene, nicht-YForm-Tabellen werden (noch) nicht unterstützt.
+
+Das klassische URL Addon ist universeller einsetzbar und kann mit beliebigen Tabellen und Strukturen arbeiten, benötigt aber für komplexe Strukturen oft viele Profile und individuelle Konfigurationen. Virtual URLs ist auf YForm spezialisiert und setzt auf ein zentrales, einfaches Profil-Konzept pro Tabelle.
+
+Eine parallele Nutzung beider Addons ist technisch möglich, sollte aber mit Bedacht erfolgen, um Routing-Konflikte zu vermeiden.
 
 ## Konzept
 
