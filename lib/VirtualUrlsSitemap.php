@@ -2,105 +2,108 @@
 
 class VirtualUrlsSitemap
 {
-    public static function addToSitemap(rex_extension_point $ep)
+    /**
+     * Adds virtual URLs to the YRewrite sitemap.
+     *
+     * EP: YREWRITE_DOMAIN_SITEMAP
+     * Subject: array of XML strings
+     * Params: ['domain' => rex_yrewrite_domain]
+     *
+     * @param rex_extension_point $ep
+     * @return list<string>
+     */
+    public static function addToSitemap(rex_extension_point $ep): array
     {
-        $domain = $ep->getSubject(); // rex_yrewrite_domain
-        $sitemap = $ep->getParam('sitemap'); // rex_yrewrite_sitemap
+        /** @var list<string> $sitemap */
+        $sitemap = $ep->getSubject();
+
+        /** @var rex_yrewrite_domain $domain */
+        $domain = $ep->getParam('domain');
 
         $sql = rex_sql::factory();
         $profiles = $sql->getArray('SELECT * FROM ' . rex::getTable('virtual_urls_profiles') . ' WHERE default_category_id > 0');
 
         foreach ($profiles as $profile) {
-            // Check if default category is within the current domain
-            $cat = rex_category::get($profile['default_category_id']);
-            if (!$cat || $cat->getClangId() != $domain->getStartClang()) {
-                // If clang differs, YRewrite might call this EP for each clang?
-                // YRewrite generates sitemap per Domain AND per Clang usually?
-                // We need to check if the category belongs to the current domain mount.
-                // Simplified check:
-                // if ($cat->domain != $domain) ... (requires complex check)
+            // Check if the profile's category belongs to this domain
+            $categoryId = (int) $profile['default_category_id'];
+            $articleDomain = rex_yrewrite::getDomainByArticleId($categoryId);
+            if (!$articleDomain || $articleDomain->getName() !== $domain->getName()) {
+                continue;
             }
-            
-            // Build Query
+
+            // Build WHERE clause
             $where = '1=1';
-            
-            if (!empty($profile['sitemap_filter'])) {
-                $filter = $profile['sitemap_filter'];
-                
-                // Replace Placeholders with PHP Date (supports offsets like ###NOW -1 MONTH###)
-                $filter = preg_replace_callback(
-                    '/###(NOW|CURRENT_DATE|CURRENT_TIMESTAMP)(?:\s*([+-].*?))?###/',
-                    function ($matches) {
-                        $type = $matches[1];
-                        $offset = isset($matches[2]) && trim($matches[2]) !== '' ? $matches[2] : 'now';
-                        $ts = strtotime($offset);
-                        
-                        if ($ts === false) {
-                            return $matches[0]; // invalid offset, return original
-                        }
-                        
-                        if ($type === 'NOW') {
-                             return date('Y-m-d H:i:s', $ts);
-                        } elseif ($type === 'CURRENT_DATE') {
-                             return date('Y-m-d', $ts);
-                        } elseif ($type === 'CURRENT_TIMESTAMP') {
-                             return $ts;
-                        }
-                    },
-                    $filter
-                );
-                
-                // Legacy support
-                $filter = str_replace('###DATETIME###', date('Y-m-d H:i:s'), $filter);
-                $filter = str_replace('###DATE###', date('Y-m-d'), $filter);
-                
-                $where = $filter;
+
+            if (trim($profile['sitemap_filter'] ?? '') !== '') {
+                $where = self::replaceDatePlaceholders($profile['sitemap_filter']);
             }
 
             $items = rex_sql::factory();
             $items->setQuery('SELECT * FROM ' . $profile['table_name'] . ' WHERE ' . $where);
 
             foreach ($items as $item) {
-                 // Construct URL
-                 // Base URL of the category
-                 // We need the URL of the category for the current clang?
-                 // $ep->getSubject() is the domain.
-                 
-                 // Reconstruct:
-                 // https://domain.de/category-path/trigger/slug
-                 
-                 // Get Category URL via YRewrite
-                 // $catUrl = rex_yrewrite::getFullPath($cat->getUrl()); 
-                 // Problem: $cat might be in different clang. we should respect current sitemap clang?
-                 
-                 // Let's assume we are generating sitemap for the clang of the category or map it.
-                 // For now simplified:
-                 
-                 $catUrl = rex_getUrl($profile['default_category_id']);
-                 
-                 // Remove trailing slash if exists
-                 $catUrl = rtrim($catUrl, '/');
-                 
-                 $url = $catUrl . '/' . $profile['trigger_segment'] . '/' . $item->getValue($profile['url_field']);
-                 
-                 // Add to Sitemap
-                 // loc, lastmod, changefreq, priority
-                 $lastmod = date('c'); // default now
-                 if ($item->hasValue('updatedate')) {
-                     $lastmod = date('c', $item->getValue('updatedate'));
-                 } elseif ($item->hasValue('createdate')) {
-                     $lastmod = date('c', $item->getValue('createdate'));
-                 }
+                // Build full URL: category-path/trigger/slug
+                $catUrl = rtrim(rex_yrewrite::getFullUrlByArticleId($categoryId), '/');
+                $slug = $item->getValue($profile['url_field']);
+                $fullUrl = $catUrl . '/' . $profile['trigger_segment'] . '/' . $slug;
 
-                 $sitemap[] = [
-                    'loc' => $url,
-                    'lastmod' => $lastmod,
-                    'changefreq' => 'weekly',
-                    'priority' => '0.5'
-                 ];
+                // Determine lastmod
+                $lastmod = date(DATE_W3C);
+                if ($item->hasValue('updatedate') && $item->getValue('updatedate')) {
+                    $ts = strtotime($item->getValue('updatedate'));
+                    if ($ts !== false) {
+                        $lastmod = date(DATE_W3C, $ts);
+                    }
+                } elseif ($item->hasValue('createdate') && $item->getValue('createdate')) {
+                    $ts = strtotime($item->getValue('createdate'));
+                    if ($ts !== false) {
+                        $lastmod = date(DATE_W3C, $ts);
+                    }
+                }
+
+                $sitemap[] =
+                    "\n" . '<url>' .
+                    "\n\t" . '<loc>' . rex_escape($fullUrl) . '</loc>' .
+                    "\n\t" . '<lastmod>' . $lastmod . '</lastmod>' .
+                    "\n\t" . '<changefreq>weekly</changefreq>' .
+                    "\n\t" . '<priority>0.5</priority>' .
+                    "\n" . '</url>';
             }
         }
-        
+
         return $sitemap;
+    }
+
+    /**
+     * Replace date placeholders like ###NOW###, ###NOW -1 MONTH###, ###CURRENT_DATE###, etc.
+     */
+    private static function replaceDatePlaceholders(string $filter): string
+    {
+        $filter = preg_replace_callback(
+            '/###(NOW|CURRENT_DATE|CURRENT_TIMESTAMP)(?:\s*([+-].*?))?###/',
+            static function (array $matches): string {
+                $type = $matches[1];
+                $offset = isset($matches[2]) && trim($matches[2]) !== '' ? trim($matches[2]) : 'now';
+                $ts = strtotime($offset);
+
+                if ($ts === false) {
+                    return $matches[0];
+                }
+
+                return match ($type) {
+                    'NOW' => date('Y-m-d H:i:s', $ts),
+                    'CURRENT_DATE' => date('Y-m-d', $ts),
+                    'CURRENT_TIMESTAMP' => (string) $ts,
+                    default => $matches[0],
+                };
+            },
+            $filter
+        ) ?? $filter;
+
+        // Legacy placeholders
+        $filter = str_replace('###DATETIME###', date('Y-m-d H:i:s'), $filter);
+        $filter = str_replace('###DATE###', date('Y-m-d'), $filter);
+
+        return $filter;
     }
 }

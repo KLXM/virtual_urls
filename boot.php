@@ -16,6 +16,6 @@ if (rex_addon::get('yrewrite')->isAvailable()) {
         });
     }
     
-    // Sitemap Integration (Global, as sitemap generation might be triggered from anywhere)
-    rex_extension::register('YREWRITE_SITEMAP_PARSED', [VirtualUrlsSitemap::class, 'addToSitemap']);
+    // Sitemap Integration
+    rex_extension::register('YREWRITE_DOMAIN_SITEMAP', [VirtualUrlsSitemap::class, 'addToSitemap']);
 }
