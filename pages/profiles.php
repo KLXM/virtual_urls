@@ -22,6 +22,9 @@ if ($func === 'status') {
 
 if ($func === 'edit' || $func === 'add') {
     $form = rex_form::factory(rex::getTable('virtual_urls_profiles'), '', $func === 'edit' ? 'id=' . $id : 'id=0', 'post', false);
+    if ($func === 'edit') {
+        $form->addParam('id', $id);
+    }
 
     $field = $form->addSelectField('status');
     $field->setLabel('Status');
