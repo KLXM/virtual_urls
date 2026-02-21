@@ -19,7 +19,7 @@ if ($func === 'status') {
 }
 
 if ($func === 'edit' || $func === 'add') {
-    $form = rex_form::factory(rex::getTable('virtual_urls_profiles'), '', $func === 'edit' ? 'id=' . $id : '1=1', 'post', false);
+    $form = rex_form::factory(rex::getTable('virtual_urls_profiles'), '', $func === 'edit' ? 'id=' . $id : 'id=0', 'post', false);
 
     $field = $form->addSelectField('status');
     $field->setLabel('Status');
@@ -41,6 +41,7 @@ if ($func === 'edit' || $func === 'add') {
     $field = $form->addSelectField('domain');
     $field->setLabel('Domain');
     $field->setNotice('Die Domain, für die dieses Profil gilt. "Alle Domains" = Profil greift überall.');
+    $field->setDefaultSaveValue('');
     $select = $field->getSelect();
     $select->addOption('Alle Domains', '');
     if (rex_addon::get('yrewrite')->isAvailable()) {
