@@ -1,5 +1,7 @@
 <?php
 
+rex_view::addJsFile(rex_addon::get('virtual_urls')->getAssetsUrl('profiles.js'));
+
 $func = rex_request('func', 'string');
 $id = rex_request('id', 'int');
 
@@ -57,6 +59,7 @@ if ($func === 'edit' || $func === 'add') {
     $field->setLabel('YForm Tabelle');
     $field->setNotice('Die Tabelle, aus der die Datensätze geladen werden sollen.');
     $field->setAttribute('id', 'virtual-urls-table-name');
+    $field->setAttribute('data-ajax-url', rex_url::backendPage('virtual_urls/ajax.columns'));
     $select = $field->getSelect();
     $select->addOption('Bitte wählen...', '');
     $tables = rex_sql::factory()->getArray('SHOW TABLES');
@@ -199,62 +202,10 @@ if ($func === 'edit' || $func === 'add') {
 
     $content = $form->get();
 
-    // JavaScript für Ajax-Spalten-Laden
-    $ajaxUrl = rex_url::backendPage('virtual_urls/ajax.columns');
-    $script = <<<JS
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const tableInput = document.getElementById('virtual-urls-table-name');
-    const relationTableInput = document.getElementById('virtual-urls-relation-table');
-    const columnSelects = document.querySelectorAll('.virtual-urls-column-select');
-    const relationColumnSelects = document.querySelectorAll('.virtual-urls-relation-column-select');
-
-    function loadColumns(tableName, selects) {
-        if (!tableName) {
-            selects.forEach(select => {
-                select.innerHTML = '<option value="">Bitte Tabelle wählen...</option>';
-            });
-            return;
-        }
-
-        fetch('{$ajaxUrl}&table=' + encodeURIComponent(tableName))
-            .then(response => response.json())
-            .then(columns => {
-                selects.forEach(select => {
-                    const selectedValue = select.getAttribute('data-selected');
-                    let options = '<option value="">- Bitte wählen -</option>';
-                    columns.forEach(col => {
-                        const isSelected = (col === selectedValue) ? ' selected' : '';
-                        options += '<option value="' + col + '"' + isSelected + '>' + col + '</option>';
-                    });
-                    select.innerHTML = options;
-                });
-            });
-    }
-
-    if (tableInput) {
-        tableInput.addEventListener('change', () => loadColumns(tableInput.value, columnSelects));
-        // Initial load
-        if (tableInput.value) {
-            loadColumns(tableInput.value, columnSelects);
-        }
-    }
-
-    if (relationTableInput) {
-        relationTableInput.addEventListener('change', () => loadColumns(relationTableInput.value, relationColumnSelects));
-        // Initial load
-        if (relationTableInput.value) {
-            loadColumns(relationTableInput.value, relationColumnSelects);
-        }
-    }
-});
-</script>
-JS;
-
     $fragment = new rex_fragment();
     $fragment->setVar('class', 'edit', false);
     $fragment->setVar('title', ($func === 'edit') ? 'Profil bearbeiten' : 'Profil erstellen', false);
-    $fragment->setVar('body', $content . $script, false);
+    $fragment->setVar('body', $content, false);
     echo $fragment->parse('core/page/section.php');
 } else {
     // Liste
