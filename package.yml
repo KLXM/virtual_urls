@@ -17,7 +17,7 @@ page:
         profiles:
             title: 'Profile'
             icon: rex-icon fa-list
-        help:
+        tester:
             title: 'URLs & Tester'
             icon: rex-icon fa-search
         tools:
@@ -26,6 +26,8 @@ page:
         ajax.columns:
             title: 'Ajax Columns'
             hidden: true
-        docs:
+        help:
             title: 'Hilfe'
             icon: rex-icon fa-question-circle
+            subPath: README.md
+            itemClass: 'pull-right'
