@@ -20,6 +20,9 @@ page:
         help:
             title: 'URLs & Tester'
             icon: rex-icon fa-search
+        tools:
+            title: 'Slug-Generator'
+            icon: rex-icon fa-cogs
         docs:
             title: 'Hilfe'
             icon: rex-icon fa-question-circle
