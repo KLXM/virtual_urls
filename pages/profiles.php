@@ -66,6 +66,27 @@ if ($func === 'edit' || $func === 'add') {
         }
     }
 
+    // Im Edit-Modus Spalten der gespeicherten Tabellen vorladen (damit rex_form die Werte speichern kann)
+    $preloadedMainColumns = [];
+    $preloadedRelationColumns = [];
+    if ($form->isEditMode()) {
+        $savedTableName = (string) $form->getSql()->getValue('table_name');
+        $savedRelationTable = (string) $form->getSql()->getValue('relation_table');
+        $sqlHelper = rex_sql::factory();
+        if ($savedTableName !== '') {
+            $colRows = $sqlHelper->getArray('SHOW COLUMNS FROM ' . $sqlHelper->escapeIdentifier($savedTableName));
+            foreach ($colRows as $col) {
+                $preloadedMainColumns[] = $col['Field'];
+            }
+        }
+        if ($savedRelationTable !== '') {
+            $colRows = $sqlHelper->getArray('SHOW COLUMNS FROM ' . $sqlHelper->escapeIdentifier($savedRelationTable));
+            foreach ($colRows as $col) {
+                $preloadedRelationColumns[] = $col['Field'];
+            }
+        }
+    }
+
     $field = $form->addTextField('trigger_segment');
     $field->setLabel('URL Trigger Segment');
     $field->setNotice('Der Teil der URL, der die virtuelle URL einleitet, z.B. news');
@@ -77,6 +98,9 @@ if ($func === 'edit' || $func === 'add') {
     $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('url_field') : '');
     $select = $field->getSelect();
     $select->addOption('Bitte Tabelle wählen...', '');
+    foreach ($preloadedMainColumns as $col) {
+        $select->addOption($col, $col);
+    }
 
     $field = $form->addLinkmapField('article_id');
     $field->setLabel('Renderer Artikel');
@@ -92,6 +116,9 @@ if ($func === 'edit' || $func === 'add') {
     $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('relation_field') : '');
     $select = $field->getSelect();
     $select->addOption('Bitte Tabelle wählen...', '');
+    foreach ($preloadedMainColumns as $col) {
+        $select->addOption($col, $col);
+    }
 
     $field = $form->addSelectField('relation_table');
     $field->setLabel('Relation Tabelle (Optional)');
@@ -113,6 +140,9 @@ if ($func === 'edit' || $func === 'add') {
     $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('relation_slug_field') : '');
     $select = $field->getSelect();
     $select->addOption('Bitte Relationstabelle wählen...', '');
+    foreach ($preloadedRelationColumns as $col) {
+        $select->addOption($col, $col);
+    }
 
     $field = $form->addTextField('sitemap_filter');
     $field->setLabel('Sitemap Filter (SQL Where)');
@@ -139,7 +169,10 @@ if ($func === 'edit' || $func === 'add') {
     $field->setAttribute('class', 'form-control virtual-urls-column-select');
     $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('seo_title_field') : '');
     $select = $field->getSelect();
-    $select->addOption('Bitte Tabelle wählen...', '');
+    $select->addOption('- Leer (Standard) -', '');
+    foreach ($preloadedMainColumns as $col) {
+        $select->addOption($col, $col);
+    }
 
     $field = $form->addSelectField('seo_description_field');
     $field->setLabel('SEO Description Feld');
@@ -147,7 +180,10 @@ if ($func === 'edit' || $func === 'add') {
     $field->setAttribute('class', 'form-control virtual-urls-column-select');
     $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('seo_description_field') : '');
     $select = $field->getSelect();
-    $select->addOption('Bitte Tabelle wählen...', '');
+    $select->addOption('- Leer (Standard) -', '');
+    foreach ($preloadedMainColumns as $col) {
+        $select->addOption($col, $col);
+    }
 
     $field = $form->addSelectField('seo_image_field');
     $field->setLabel('SEO Image Feld');
@@ -155,7 +191,10 @@ if ($func === 'edit' || $func === 'add') {
     $field->setAttribute('class', 'form-control virtual-urls-column-select');
     $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('seo_image_field') : '');
     $select = $field->getSelect();
-    $select->addOption('Bitte Tabelle wählen...', '');
+    $select->addOption('- Leer (Standard) -', '');
+    foreach ($preloadedMainColumns as $col) {
+        $select->addOption($col, $col);
+    }
 
     $content = $form->get();
 
