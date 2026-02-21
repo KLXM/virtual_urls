@@ -16,9 +16,13 @@ class VirtualUrls
         $url = trim($url, '/');
         $segments = explode('/', $url);
 
-        // Get profiles
+        // Get profiles matching the current domain
         $sql = rex_sql::factory();
-        $profiles = $sql->getArray('SELECT * FROM ' . rex::getTable('virtual_urls_profiles'));
+        $profiles = $sql->getArray(
+            'SELECT * FROM ' . rex::getTable('virtual_urls_profiles') . 
+            ' WHERE domain = :domain OR domain = :empty',
+            ['domain' => $domain->getName(), 'empty' => '']
+        );
 
         foreach ($profiles as $profile) {
             $trigger = $profile['trigger_segment'];

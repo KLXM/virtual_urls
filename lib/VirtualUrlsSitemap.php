@@ -21,7 +21,11 @@ class VirtualUrlsSitemap
         $domain = $ep->getParam('domain');
 
         $sql = rex_sql::factory();
-        $profiles = $sql->getArray('SELECT * FROM ' . rex::getTable('virtual_urls_profiles') . ' WHERE default_category_id > 0');
+        $profiles = $sql->getArray(
+            'SELECT * FROM ' . rex::getTable('virtual_urls_profiles') . 
+            ' WHERE default_category_id > 0 AND (domain = :domain OR domain = :empty)',
+            ['domain' => $domain->getName(), 'empty' => '']
+        );
 
         foreach ($profiles as $profile) {
             // Check if the profile's category belongs to this domain

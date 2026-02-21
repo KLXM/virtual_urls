@@ -1,15 +1,15 @@
 <?php
 
-$sql = rex_sql::factory();
-
-$sql->setQuery('CREATE TABLE IF NOT EXISTS ' . rex::getTable('virtual_urls_profiles') . ' (
-    id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-    table_name VARCHAR(255) NOT NULL,
-    trigger_segment VARCHAR(255) NOT NULL,
-    url_field VARCHAR(255) NOT NULL,
-    article_id INT(11) UNSIGNED NOT NULL,
-    relation_field VARCHAR(255) DEFAULT NULL,
-    default_category_id INT(11) UNSIGNED DEFAULT NULL,
-    sitemap_filter VARCHAR(255) DEFAULT NULL,
-    PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;');
+// Tabelle anlegen/aktualisieren via rex_sql_table
+rex_sql_table::get(rex::getTable('virtual_urls_profiles'))
+    ->ensureColumn(new rex_sql_column('id', 'int(11) unsigned', false, null, 'auto_increment'))
+    ->ensureColumn(new rex_sql_column('domain', 'varchar(255)', false, ''))
+    ->ensureColumn(new rex_sql_column('table_name', 'varchar(255)', false, ''))
+    ->ensureColumn(new rex_sql_column('trigger_segment', 'varchar(255)', false, ''))
+    ->ensureColumn(new rex_sql_column('url_field', 'varchar(255)', false, ''))
+    ->ensureColumn(new rex_sql_column('article_id', 'int(11) unsigned', false, '0'))
+    ->ensureColumn(new rex_sql_column('relation_field', 'varchar(255)', true))
+    ->ensureColumn(new rex_sql_column('default_category_id', 'int(11) unsigned', true))
+    ->ensureColumn(new rex_sql_column('sitemap_filter', 'varchar(255)', true))
+    ->setPrimaryKey('id')
+    ->ensure();
