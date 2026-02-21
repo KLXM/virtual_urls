@@ -4,19 +4,20 @@ Dieses Addon (Virtual URLs) und das klassische URL Addon verfolgen unterschiedli
 
 | Aspekt                | URL Addon (yrewrite_url)                                   | Virtual URLs Addon (dieses Addon)                  |
 |-----------------------|------------------------------------------------------------|-----------------------------------------------------|
-| Zielgruppe            | Standard-REDAXO-Installationen mit YForm/YRewrite         | Projekte mit individuellen Tabellen/Profilen        |
-| Funktionsweise        | Automatische Generierung von URLs für Artikel & YForm      | Profile-basierte, flexible URL-Schemata für beliebige Tabellen |
-| Konfiguration         | Über YAML/Backend, meist global                           | Pro Profil (Tabelle) individuell im Backend         |
-| URL-Schema            | Fest vorgegeben (z.B. /kategorie/artikel)                 | Frei definierbar (z.B. /slug, /trigger/slug, mit Relation) |
+| Zielgruppe            | REDAXO-Installationen mit beliebigen Tabellen (YForm oder eigene) | Projekte mit YForm-Tabellen und individuellen Profilen |
+| Funktionsweise        | Automatische Generierung von URLs für Artikel & beliebige Tabellen | Profile-basierte, flexible URL-Schemata für YForm-Tabellen |
+| Konfiguration         | Über YAML/Backend, meist global                           | Pro Profil (YForm-Tabelle) individuell im Backend         |
+| URL-Schema            | Fest vorgegeben (z.B. /kategorie/artikel) oder anpassbar  | Frei definierbar (z.B. /slug, /trigger/slug, mit Relation) |
 | Mehrsprachigkeit      | Unterstützt, aber an REDAXO-Struktur gebunden             | Unterstützt, pro Profil/Datensatz steuerbar         |
-| Relationen            | Eingeschränkt, meist nur Kategorie/Artikel                | Beliebige Relationen zwischen Tabellen möglich      |
-| Sitemap               | Automatisch für Artikel/YForm                             | Automatisch für alle Profile, auch eigene Tabellen  |
-| API/Helper            | Wenige, meist für Artikel                                 | Umfangreiche Helper-Methoden für beliebige Datensätze |
-| Einschränkungen       | Funktioniert nur mit YForm/YRewrite und REDAXO-Struktur   | Kein Ersatz für komplexe Routing-Addons, keine automatische Migration bestehender URLs |
+| Relationen            | Möglich, auch zwischen beliebigen Tabellen                | Beliebige Relationen zwischen YForm-Tabellen möglich      |
+| Sitemap               | Automatisch für Artikel und Tabellen                       | Automatisch für alle Profile/YForm-Tabellen         |
+| API/Helper            | Wenige, meist für Artikel                                 | Umfangreiche Helper-Methoden für YForm-Datensätze   |
+| Einschränkungen       | Kann mit beliebigen Tabellen arbeiten                     | Funktioniert ausschließlich mit YForm-Tabellen, kein Ersatz für komplexe Routing-Addons, keine automatische Migration bestehender URLs |
 
-**Einschränkungen dieses Addons:**
 
-- Das Addon ist nicht als Drop-in-Ersatz für das klassische URL Addon gedacht, sondern richtet sich an Projekte mit individuellen Anforderungen (eigene Tabellen, flexible Schemata).
+**Einschränkung dieses Addons:**
+
+- Das Addon funktioniert ausschließlich mit YForm-Tabellen (keine Unterstützung für eigene, nicht-YForm-Tabellen).
 - Es findet keine automatische Migration bestehender URLs oder Redirects statt.
 - Für sehr komplexe Routing-Anforderungen (z.B. verschachtelte Relationen, dynamische Parameter) kann ggf. ein spezialisiertes Routing-Addon sinnvoller sein.
 - Die Integration mit anderen Addons (z.B. Consent Manager, Search) muss ggf. individuell erfolgen.
