@@ -26,53 +26,118 @@ class VirtualUrls
 
         foreach ($profiles as $profile) {
             $trigger = $profile['trigger_segment'];
+            $hasRelation = trim($profile['relation_field'] ?? '') !== '' 
+                && trim($profile['relation_table'] ?? '') !== '' 
+                && trim($profile['relation_slug_field'] ?? '') !== '';
 
             // Find trigger in segments
             $triggerIndex = array_search($trigger, $segments);
 
-            if ($triggerIndex !== false && isset($segments[$triggerIndex + 1])) {
-                $slug = $segments[$triggerIndex + 1];
+            if ($triggerIndex === false) {
+                continue;
+            }
 
+            if ($hasRelation) {
+                // URL: /<path>/<trigger>/<relation-slug>/<item-slug>
+                if (!isset($segments[$triggerIndex + 1], $segments[$triggerIndex + 2])) {
+                    continue;
+                }
+                // Ensure the path ends here
+                if (count($segments) > $triggerIndex + 3) {
+                    continue;
+                }
+
+                $relationSlug = $segments[$triggerIndex + 1];
+                $slug = $segments[$triggerIndex + 2];
+
+                // Resolve relation slug to ID
+                $relationId = self::resolveRelationSlug(
+                    $profile['relation_table'],
+                    $profile['relation_slug_field'],
+                    $relationSlug
+                );
+
+                if ($relationId === null) {
+                    continue;
+                }
+
+                // Find dataset matching slug AND relation
+                $table = $profile['table_name'];
+                $field = $profile['url_field'];
+
+                $dataset = rex_yform_manager_dataset::query($table)
+                    ->where($field, $slug)
+                    ->where($profile['relation_field'], $relationId)
+                    ->findOne();
+            } else {
+                // URL: /<path>/<trigger>/<item-slug> (ohne Relation)
+                if (!isset($segments[$triggerIndex + 1])) {
+                    continue;
+                }
                 // Ensure the path ends here
                 if (count($segments) > $triggerIndex + 2) {
                     continue;
                 }
 
-                // Now check if slug exists in dataset
+                $slug = $segments[$triggerIndex + 1];
+
                 $table = $profile['table_name'];
                 $field = $profile['url_field'];
 
                 $dataset = rex_yform_manager_dataset::query($table)
                     ->where($field, $slug)
                     ->findOne();
+            }
 
-                if ($dataset) {
-                    // Match found!
+            if ($dataset) {
+                // Match found!
 
-                    // Determine the article_id to render
-                    $articleId = (int) $profile['article_id'];
+                // Determine the article_id to render
+                $articleId = (int) $profile['article_id'];
 
-                    // Try to resolve the path UP TO the trigger to a real article
-                    $checkPath = implode('/', array_slice($segments, 0, $triggerIndex + 1));
-                    $mountId = self::getArticleIdByPath($checkPath, $domain);
+                // Try to resolve the path UP TO the trigger to a real article
+                $checkPath = implode('/', array_slice($segments, 0, $triggerIndex + 1));
+                $mountId = self::getArticleIdByPath($checkPath, $domain);
 
-                    if ($mountId) {
-                        $articleId = $mountId;
-                    }
-
-                    // Store data for usage in module/template
-                    rex::setProperty('virtual_urls.data', $dataset);
-                    rex::setProperty('virtual_urls.profile', $profile);
-
-                    // Return article_id to YRewrite's path resolver
-                    return ['article_id' => $articleId];
+                if ($mountId) {
+                    $articleId = $mountId;
                 }
+
+                // Store data for usage in module/template
+                rex::setProperty('virtual_urls.data', $dataset);
+                rex::setProperty('virtual_urls.profile', $profile);
+
+                // Return article_id to YRewrite's path resolver
+                return ['article_id' => $articleId];
             }
         }
 
         return null;
     }
     
+    /**
+     * Resolve a relation slug to its ID.
+     *
+     * Compares the normalized slug field value from the relation table
+     * against the URL segment.
+     */
+    private static function resolveRelationSlug(string $table, string $slugField, string $slug): ?int
+    {
+        $sql = rex_sql::factory();
+        $rows = $sql->getArray(
+            'SELECT id, ' . $sql->escapeIdentifier($slugField) . ' FROM ' . $table
+        );
+
+        foreach ($rows as $row) {
+            $normalized = rex_string::normalize((string) $row[$slugField], '-', '_');
+            if ($normalized === $slug) {
+                return (int) $row['id'];
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @param rex_yrewrite_domain|null $domain
      */

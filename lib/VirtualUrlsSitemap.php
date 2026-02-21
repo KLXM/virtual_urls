@@ -35,6 +35,10 @@ class VirtualUrlsSitemap
                 continue;
             }
 
+            $hasRelation = trim($profile['relation_field'] ?? '') !== '' 
+                && trim($profile['relation_table'] ?? '') !== '' 
+                && trim($profile['relation_slug_field'] ?? '') !== '';
+
             // Build WHERE clause
             $where = '1=1';
 
@@ -42,14 +46,36 @@ class VirtualUrlsSitemap
                 $where = self::replaceDatePlaceholders($profile['sitemap_filter']);
             }
 
+            // Pre-load relation slugs if needed
+            $relationSlugs = [];
+            if ($hasRelation) {
+                $relSql = rex_sql::factory();
+                $relRows = $relSql->getArray(
+                    'SELECT id, ' . $relSql->escapeIdentifier($profile['relation_slug_field']) . ' FROM ' . $profile['relation_table']
+                );
+                foreach ($relRows as $relRow) {
+                    $relationSlugs[(int) $relRow['id']] = rex_string::normalize((string) $relRow[$profile['relation_slug_field']], '-', '_');
+                }
+            }
+
             $items = rex_sql::factory();
             $items->setQuery('SELECT * FROM ' . $profile['table_name'] . ' WHERE ' . $where);
 
             foreach ($items as $item) {
-                // Build full URL: category-path/trigger/slug
+                // Build full URL: category-path/trigger/[relation-slug/]slug
                 $catUrl = rtrim(rex_yrewrite::getFullUrlByArticleId($categoryId), '/');
                 $slug = $item->getValue($profile['url_field']);
-                $fullUrl = $catUrl . '/' . $profile['trigger_segment'] . '/' . $slug;
+
+                if ($hasRelation) {
+                    $relationId = (int) $item->getValue($profile['relation_field']);
+                    $relationSlug = $relationSlugs[$relationId] ?? null;
+                    if ($relationSlug === null) {
+                        continue; // Skip items with unknown relation
+                    }
+                    $fullUrl = $catUrl . '/' . $profile['trigger_segment'] . '/' . $relationSlug . '/' . $slug;
+                } else {
+                    $fullUrl = $catUrl . '/' . $profile['trigger_segment'] . '/' . $slug;
+                }
 
                 // Determine lastmod
                 $lastmod = date(DATE_W3C);

@@ -48,8 +48,16 @@ if ($func === 'edit' || $func === 'add') {
     $field->setNotice('Unter dieser Kategorie werden die URLs in der Sitemap ausgegeben (Canonical Basis)');
 
     $field = $form->addTextField('relation_field');
-    $field->setLabel('Relation/Mount Feld (Optional)');
-    $field->setNotice('z.B. category_id');
+    $field->setLabel('Relation Feld (Optional)');
+    $field->setNotice('Feld in der Datentabelle, das auf die Relationstabelle verweist, z.B. category_id');
+
+    $field = $form->addTextField('relation_table');
+    $field->setLabel('Relation Tabelle (Optional)');
+    $field->setNotice('Die Tabelle der Relation, z.B. rex_news_category');
+
+    $field = $form->addTextField('relation_slug_field');
+    $field->setLabel('Relation Slug Feld (Optional)');
+    $field->setNotice('Feld in der Relationstabelle für den URL-Teil, z.B. name oder url_slug. Wird automatisch normalisiert.');
 
     $field = $form->addTextField('sitemap_filter');
     $field->setLabel('Sitemap Filter (SQL Where)');
@@ -75,6 +83,8 @@ if ($func === 'edit' || $func === 'add') {
     $list->setColumnLabel('url_field', 'Slug Feld');
     $list->setColumnLabel('article_id', 'Renderer Artikel');
     $list->removeColumn('relation_field');
+    $list->removeColumn('relation_table');
+    $list->removeColumn('relation_slug_field');
     $list->removeColumn('default_category_id');
     $list->removeColumn('sitemap_filter');
 
