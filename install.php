@@ -3,6 +3,7 @@
 // Tabelle anlegen/aktualisieren via rex_sql_table
 rex_sql_table::get(rex::getTable('virtual_urls_profiles'))
     ->ensureColumn(new rex_sql_column('id', 'int(11) unsigned', false, null, 'auto_increment'))
+    ->ensureColumn(new rex_sql_column('clang_id', 'int(11)', false, '-1'))
     ->ensureColumn(new rex_sql_column('domain', 'varchar(255)', false, ''))
     ->ensureColumn(new rex_sql_column('table_name', 'varchar(255)', false, ''))
     ->ensureColumn(new rex_sql_column('trigger_segment', 'varchar(255)', false, ''))

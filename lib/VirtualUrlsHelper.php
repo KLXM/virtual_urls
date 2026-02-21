@@ -23,7 +23,11 @@ class VirtualUrlsHelper
      */
     public static function getUrl(string $table, int $datasetId, int $clangId = -1): ?string
     {
-        $profile = self::getProfileByTable($table);
+        if ($clangId < 0) {
+            $clangId = rex_clang::getCurrentId();
+        }
+
+        $profile = self::getProfileByTable($table, $clangId);
         if ($profile === null) {
             return null;
         }
@@ -45,8 +49,12 @@ class VirtualUrlsHelper
      */
     public static function getUrlByDataset(rex_yform_manager_dataset $dataset, int $clangId = -1): ?string
     {
+        if ($clangId < 0) {
+            $clangId = rex_clang::getCurrentId();
+        }
+
         $table = $dataset->getTableName();
-        $profile = self::getProfileByTable($table);
+        $profile = self::getProfileByTable($table, $clangId);
         if ($profile === null) {
             return null;
         }
@@ -66,6 +74,10 @@ class VirtualUrlsHelper
      */
     public static function getLink(string $table, int $datasetId, string $label = '', array $attributes = [], int $clangId = -1): string
     {
+        if ($clangId < 0) {
+            $clangId = rex_clang::getCurrentId();
+        }
+
         $url = self::getUrl($table, $datasetId, $clangId);
         if ($url === null) {
             return '';
@@ -73,7 +85,7 @@ class VirtualUrlsHelper
 
         if ($label === '') {
             $dataset = rex_yform_manager_dataset::get($datasetId, $table);
-            $profile = self::getProfileByTable($table);
+            $profile = self::getProfileByTable($table, $clangId);
             $label = $dataset !== null && $profile !== null ? $dataset->getValue($profile['url_field']) : $url;
         }
 
@@ -96,7 +108,11 @@ class VirtualUrlsHelper
      */
     public static function getUrlList(string $table, string $where = '', string $orderBy = '', int $clangId = -1): array
     {
-        $profile = self::getProfileByTable($table);
+        if ($clangId < 0) {
+            $clangId = rex_clang::getCurrentId();
+        }
+
+        $profile = self::getProfileByTable($table, $clangId);
         if ($profile === null) {
             return [];
         }
@@ -264,20 +280,30 @@ class VirtualUrlsHelper
     }
 
     /**
-     * Gibt das Profil für eine bestimmte Tabelle zurück.
+     * Gibt das Profil für eine bestimmte Tabelle und Sprache zurück.
+     *
+     * Präferiert ein sprachspezifisches Profil, fällt auf "Alle Sprachen" zurück.
      *
      * @return array<string, mixed>|null
      */
-    public static function getProfileByTable(string $table): ?array
+    public static function getProfileByTable(string $table, int $clangId = -1): ?array
     {
+        if ($clangId < 0) {
+            $clangId = rex_clang::getCurrentId();
+        }
+
         if (self::$profileCache === null) {
             self::$profileCache = [];
             foreach (self::getAllProfiles() as $profile) {
-                self::$profileCache[$profile['table_name']] = $profile;
+                $key = $profile['table_name'] . '|' . (int) ($profile['clang_id'] ?? -1);
+                self::$profileCache[$key] = $profile;
             }
         }
 
-        return self::$profileCache[$table] ?? null;
+        // Erst sprachspezifisches Profil, dann Fallback auf "Alle"
+        return self::$profileCache[$table . '|' . $clangId]
+            ?? self::$profileCache[$table . '|-1']
+            ?? null;
     }
 
     /**

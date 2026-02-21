@@ -16,12 +16,13 @@ class VirtualUrls
         $url = trim($url, '/');
         $segments = explode('/', $url);
 
-        // Get profiles matching the current domain
+        // Get profiles matching the current domain and language
+        $clangId = rex_clang::getCurrentId();
         $sql = rex_sql::factory();
         $profiles = $sql->getArray(
             'SELECT * FROM ' . rex::getTable('virtual_urls_profiles') . 
-            ' WHERE domain = :domain OR domain = :empty',
-            ['domain' => $domain->getName(), 'empty' => '']
+            ' WHERE (domain = :domain OR domain = :empty) AND (clang_id = :clang OR clang_id = -1)',
+            ['domain' => $domain->getName(), 'empty' => '', 'clang' => $clangId]
         );
 
         foreach ($profiles as $profile) {
@@ -107,8 +108,15 @@ class VirtualUrls
                 rex::setProperty('virtual_urls.data', $dataset);
                 rex::setProperty('virtual_urls.profile', $profile);
 
-                // Return article_id to YRewrite's path resolver
-                return ['article_id' => $articleId];
+                // Determine clang from profile
+                $clang = (int) ($profile['clang_id'] ?? -1);
+
+                // Return article_id (and clang if set) to YRewrite's path resolver
+                $result = ['article_id' => $articleId];
+                if ($clang >= 0) {
+                    $result['clang'] = $clang;
+                }
+                return $result;
             }
         }
 

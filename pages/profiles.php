@@ -13,6 +13,16 @@ if ($func === 'delete') {
 if ($func === 'edit' || $func === 'add') {
     $form = rex_form::factory(rex::getTable('virtual_urls_profiles'), '', $func === 'edit' ? 'id=' . $id : '', 'post', false);
 
+    // Sprache
+    $field = $form->addSelectField('clang_id');
+    $field->setLabel('Sprache');
+    $field->setNotice('Die Sprache, für die dieses Profil gilt. "Alle Sprachen" = sprachunabhängig.');
+    $select = $field->getSelect();
+    $select->addOption('Alle Sprachen', '-1');
+    foreach (rex_clang::getAll() as $clang) {
+        $select->addOption($clang->getName(), $clang->getId());
+    }
+
     // Domain-Auswahl aus YRewrite
     $field = $form->addSelectField('domain');
     $field->setLabel('Domain');
@@ -77,12 +87,22 @@ if ($func === 'edit' || $func === 'add') {
     $list->addTableAttribute('class', 'table-striped');
 
     $list->setColumnLabel('id', 'ID');
+    $list->setColumnLabel('clang_id', 'Sprache');
     $list->setColumnLabel('domain', 'Domain');
     $list->setColumnLabel('table_name', 'Tabelle');
     $list->setColumnLabel('trigger_segment', 'URL Trigger');
     $list->setColumnLabel('url_field', 'Slug Feld');
     $list->setColumnLabel('article_id', 'Renderer Artikel');
     $list->removeColumn('relation_field');
+
+    $list->setColumnFormat('clang_id', 'custom', static function ($params) {
+        $value = (int) $params['list']->getValue('clang_id');
+        if ($value < 0) {
+            return '<em>Alle</em>';
+        }
+        $clang = rex_clang::get($value);
+        return $clang !== null ? rex_escape($clang->getName()) : (string) $value;
+    });
     $list->removeColumn('relation_table');
     $list->removeColumn('relation_slug_field');
     $list->removeColumn('default_category_id');

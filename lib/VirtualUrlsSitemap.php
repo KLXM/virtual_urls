@@ -27,6 +27,14 @@ class VirtualUrlsSitemap
             ['domain' => $domain->getName(), 'empty' => '']
         );
 
+        // Deduplicate: if a profile is clang-specific, skip the "all languages" variant for the same table+trigger
+        $specificClangs = [];
+        foreach ($profiles as $p) {
+            if ((int) ($p['clang_id'] ?? -1) >= 0) {
+                $specificClangs[$p['table_name'] . '|' . $p['trigger_segment']][] = (int) $p['clang_id'];
+            }
+        }
+
         foreach ($profiles as $profile) {
             // Check if the profile's category belongs to this domain
             $categoryId = (int) $profile['default_category_id'];
@@ -34,6 +42,9 @@ class VirtualUrlsSitemap
             if (!$articleDomain || $articleDomain->getName() !== $domain->getName()) {
                 continue;
             }
+
+            // Determine clang for URLs
+            $profileClang = (int) ($profile['clang_id'] ?? -1);
 
             $hasRelation = trim($profile['relation_field'] ?? '') !== '' 
                 && trim($profile['relation_table'] ?? '') !== '' 
@@ -63,7 +74,8 @@ class VirtualUrlsSitemap
 
             foreach ($items as $item) {
                 // Build full URL: category-path/trigger/[relation-slug/]slug
-                $catUrl = rtrim(rex_yrewrite::getFullUrlByArticleId($categoryId), '/');
+                $clangForUrl = $profileClang >= 0 ? $profileClang : rex_clang::getStartId();
+                $catUrl = rtrim(rex_yrewrite::getFullUrlByArticleId($categoryId, $clangForUrl), '/');
                 $slug = $item->getValue($profile['url_field']);
 
                 if ($hasRelation) {
