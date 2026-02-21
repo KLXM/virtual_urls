@@ -228,6 +228,19 @@ Das AddOn überwacht `YFORM_DATA_ADDED`, `YFORM_DATA_UPDATED` und `YFORM_DATA_DE
 | `getAllProfiles(): array` | Alle Profile |
 | `clearCache(): void` | Profil-Cache leeren |
 
+## Autor
+
+**Friends Of REDAXO**
+
+* http://www.redaxo.org
+* https://github.com/FriendsOfREDAXO
+
+## Credits
+
+**Projektleitung**
+
+[Thomas Skerbis](https://github.com/skerbis)
+
 ## Lizenz
 
-MIT
+MIT License – siehe [LICENSE](LICENSE)
