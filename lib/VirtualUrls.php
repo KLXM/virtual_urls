@@ -73,17 +73,22 @@ class VirtualUrls
         }
     }
     
-    private static function getArticleIdByPath($path)
+    private static function getArticleIdByPath(string $path): ?int
     {
         if (!class_exists('rex_yrewrite')) {
             return null;
         }
         
-        $checkPath = '/' . trim($path, '/');
-        $paths = rex_yrewrite::getPaths();
+        $domain = rex_yrewrite::getCurrentDomain();
+        if (!$domain) {
+            return null;
+        }
+
+        $url = '/' . trim($path, '/') . '/';
+        $result = rex_yrewrite::getArticleIdByUrl($domain, $url);
         
-        if (isset($paths[$checkPath])) {
-            return $paths[$checkPath];
+        if ($result !== false && is_array($result)) {
+            return (int) array_key_first($result);
         }
         
         return null;
