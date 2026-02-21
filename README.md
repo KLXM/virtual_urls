@@ -1,28 +1,3 @@
-# Unterschiede: URL Addon vs. Virtual URLs Addon
-
-Dieses Addon (Virtual URLs) und das klassische URL Addon verfolgen unterschiedliche Ansätze zur Generierung und Verwaltung von sprechenden URLs in REDAXO. Nachfolgend ein neutraler Vergleich der Konzepte und Funktionsweisen:
-
-| Aspekt                | URL Addon (yrewrite_url)                                   | Virtual URLs Addon (dieses Addon)                  |
-|-----------------------|------------------------------------------------------------|-----------------------------------------------------|
-| Zielgruppe            | REDAXO-Installationen mit beliebigen Tabellen (YForm oder eigene) | Projekte mit YForm-Tabellen und individuellen Profilen |
-| Funktionsweise        | Automatische Generierung von URLs für Artikel & beliebige Tabellen | Profile-basierte, flexible URL-Schemata für YForm-Tabellen |
-| Konfiguration         | Über YAML/Backend, meist global                           | Pro Profil (YForm-Tabelle) individuell im Backend         |
-| URL-Schema            | Fest vorgegeben (z.B. /kategorie/artikel) oder anpassbar  | Frei definierbar (z.B. /slug, /trigger/slug, mit Relation) |
-| Mehrsprachigkeit      | Unterstützt, aber an REDAXO-Struktur gebunden             | Unterstützt, pro Profil/Datensatz steuerbar         |
-| Relationen            | Möglich, auch zwischen beliebigen Tabellen                | Beliebige Relationen zwischen YForm-Tabellen möglich      |
-| Sitemap               | Automatisch für Artikel und Tabellen                       | Automatisch für alle Profile/YForm-Tabellen         |
-| API/Helper            | Wenige, meist für Artikel                                 | Umfangreiche Helper-Methoden für YForm-Datensätze   |
-| Einschränkungen       | Kann mit beliebigen Tabellen arbeiten                     | Funktioniert ausschließlich mit YForm-Tabellen, kein Ersatz für komplexe Routing-Addons, keine automatische Migration bestehender URLs |
-
-
-**Einschränkung dieses Addons:**
-
-- Das Addon funktioniert ausschließlich mit YForm-Tabellen (keine Unterstützung für eigene, nicht-YForm-Tabellen).
-- Es findet keine automatische Migration bestehender URLs oder Redirects statt.
-- Für sehr komplexe Routing-Anforderungen (z.B. verschachtelte Relationen, dynamische Parameter) kann ggf. ein spezialisiertes Routing-Addon sinnvoller sein.
-- Die Integration mit anderen Addons (z.B. Consent Manager, Search) muss ggf. individuell erfolgen.
-
-Eine parallele Nutzung beider Addons ist technisch möglich, aber sollte mit Bedacht erfolgen, um Konflikte im Routing zu vermeiden.
 # Virtual URLs AddOn
 
 Dieses AddOn ermöglicht es, YForm-Datensätze (z.B. News, Produkte, Mitarbeiter) als virtuelle Unterseiten in die bestehende Struktur-Hierarchie einzuhängen — ohne für jeden Datensatz einen eigenen REDAXO-Artikel anlegen zu müssen.
