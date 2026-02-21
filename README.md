@@ -1,125 +1,233 @@
 # Virtual URLs AddOn
 
-Dieses AddOn ermöglicht es, YForm-Datensätze (z.B. News, Produkte, Mitarbeiter) als virtuelle Unterseiten in die bestehende Struktur-Hierarchie einzuhängen.
+Dieses AddOn ermöglicht es, YForm-Datensätze (z.B. News, Produkte, Mitarbeiter) als virtuelle Unterseiten in die bestehende Struktur-Hierarchie einzuhängen — ohne für jeden Datensatz einen eigenen REDAXO-Artikel anlegen zu müssen.
 
-Es löst das Problem, dass man für jeden Datensatz einen eigenen REDAXO-Artikel anlegen müsste.
+## Features
 
-**Features:**
-*   🚀 **Dynamisches Routing:** URLs wie `/news/mein-artikel` ohne echte Artikel.
-*   🗺 **Sitemap Integration:** Automatische Aufnahme aller Datensätze in die `sitemap.xml` (via YRewrite).
-*   🧭 **Smart Navigation:** Der aktive Menüpunkt bleibt erhalten (Mount Point Detection).
-*   ⚡️ **Auto-Caching:** Bei Änderungen an Datensätzen wird der Cache sofort aktualisiert.
-*   🐌 **Slug-Generator:** YForm-Feldtyp zum automatischen Erstellen von URL-Slugs.
+- 🚀 **Dynamisches Routing:** URLs wie `/news/mein-artikel` ohne echte Artikel
+- 🗺️ **Sitemap Integration:** Automatische Aufnahme in die `sitemap.xml` (via YRewrite)
+- 🧭 **Smart Navigation:** Der aktive Menüpunkt bleibt erhalten (Mount Point Detection)
+- ⚡ **Auto-Caching:** Bei Änderungen an Datensätzen wird der Cache sofort aktualisiert
+- 🐌 **Slug-Generator:** YForm-Feldtyp + Bulk-Generator für bestehende Datensätze
+- 🔗 **Relation-URLs:** Optionale Kategorie-Segmente in der URL (`/news/sport/mein-artikel`)
+- 🌐 **Mehrsprachigkeit:** Pro Sprache eigene Profile mit unterschiedlichen Triggern und Slug-Feldern
+- 🏢 **Multi-Domain:** Profile können auf einzelne Domains beschränkt werden
+- 🧪 **URL-Tester:** Backend-Tool zum Testen und Debuggen von URLs
+- 📖 **Helper-Klasse:** API zum Erzeugen von URLs und Links in Modulen/Templates
 
 ## Konzept
 
-Anstatt starre Routen zu definieren, arbeitet *Virtual URLs* mit **Profilen**:
+*Virtual URLs* arbeitet mit **Profilen**:
 
-1.  **Trigger:** Ein URL-Segment (z.B. `/news/`), das signalisiert: Hier beginnt ein virtueller Bereich.
-2.  **Mounting:** Das AddOn prüft, ob der folgende URL-Teil (Slug) in einer YForm-Tabelle existiert.
-3.  **Rendering:** Ist der Datensatz gefunden, wird technisch ein definierter "Renderer-Artikel" geladen (z.B. dein News-Detail-Modul), aber der URL-Pfad bleibt erhalten.
+1. **Trigger:** Ein URL-Segment (z.B. `news`), das signalisiert: Hier beginnt ein virtueller Bereich
+2. **Matching:** Das AddOn prüft, ob der folgende Slug in der konfigurierten YForm-Tabelle existiert
+3. **Rendering:** Ist der Datensatz gefunden, wird der definierte „Renderer-Artikel" geladen, aber der URL-Pfad bleibt erhalten
 
-## Navigation & Active State (Hybrid Mode)
+### URL-Schemas
 
-Ein besonderes Feature ist die intelligente Erkennung des Navigations-Kontextes ("Mount Point").
-
-Das AddOn versucht, den Pfad *vor* dem virtuellen Teil auf einen echten REDAXO-Artikel aufzulösen.
-Beispiel: URL ist `/unternehmen/aktuelles/news/mein-artikel`
-
-1.  Trigger ist `news`.
-2.  Das System prüft, ob für `/unternehmen/aktuelles` ein Artikel existiert.
-3.  **Falls ja:** Wird dieser Artikel als aktiver Menüpunkt markiert (`article_id`). Dein Menü bleibt also aufgeklappt und aktiv!
-4.  **Falls nein:** Wird der im Profil definierte "Renderer Artikel" als Fallback genutzt.
-
-Dies ermöglicht es, virtuelle Datensätze nahtlos in die Navigationsstruktur zu integrieren, ohne physische Unterartikel anlegen zu müssen.
+| Typ | Schema | Beispiel |
+|---|---|---|
+| Ohne Relation | `/<pfad>/<trigger>/<slug>` | `/spielberechtigungen/xnews/mein-artikel` |
+| Mit Relation | `/<pfad>/<trigger>/<relation-slug>/<slug>` | `/spielberechtigungen/xnews/sport/mein-artikel` |
 
 ## Einrichtung
 
-Unter **Virtual URLs** im Backend kannst du Profile anlegen.
+### 1. Profil anlegen
 
-### Die Felder erklärt
+Unter **Virtual URLs → Profile** ein neues Profil erstellen:
 
-*   **YForm Tabelle**
-    *   Der Name der Datenbank-Tabelle, in der die Daten liegen.
-    *   Beispiel: `rex_news` oder `rex_product`
+| Feld | Pflicht | Beschreibung |
+|---|---|---|
+| **Sprache** | Nein | Sprache für dieses Profil. „Alle Sprachen" = sprachunabhängig |
+| **Domain** | Nein | Auf eine Domain beschränken. „Alle Domains" = überall aktiv |
+| **YForm Tabelle** | Ja | Name der Datentabelle, z.B. `rex_news` |
+| **URL Trigger Segment** | Ja | Segment, das die virtuelle URL einleitet, z.B. `news` |
+| **Slug Feld Name** | Ja | Feld mit dem normalisierten URL-Slug, z.B. `url` oder `code` |
+| **Renderer Artikel** | Ja | REDAXO-Artikel, der den Datensatz rendert |
+| **Standard Kategorie** | Nein | Basis-Kategorie für Sitemap-URLs |
+| **Relation Feld** | Nein | Feld in der Datentabelle (z.B. `category_id`) |
+| **Relation Tabelle** | Nein | Tabelle der Relation (z.B. `rex_news_category`) |
+| **Relation Slug Feld** | Nein | Feld für den URL-Teil (z.B. `name`), wird automatisch normalisiert |
+| **Sitemap Filter** | Nein | SQL WHERE-Klausel mit optionalen Platzhaltern |
 
-*   **URL Trigger Segment**
-    *   Der URL-Teil, der die virtuelle URL einleitet.
-    *   Beispiel `news` → reagiert auf `deine-domain.de/kategorie/news/mein-artikel`
-    *   Besonderheit: Dieser Trigger kann **hinter jeder beliebigen Kategorie** stehen.
+### 2. Slug-Feld einrichten
 
-*   **Slug Feld Name**
-    *   Das Feld in der YForm-Tabelle, das den URL-Namen (**bereits normalisiert**) enthält.
-    *   Das AddOn vergleicht diesen Wert mit der URL. 
-    *   *Tipp:* Nutze in YForm den Feldtyp `virtual_url_slug` (dieses AddOn) oder `generate_key`.
-    *   Beispiel: `url` (enthält `mein-artikel`), `slug`.
+#### Option A: YForm-Feldtyp `virtual_url_slug`
 
-### Slug-Feld in YForm einrichten
+1. In der YForm-Feldverwaltung ein Feld vom Typ `virtual_url_slug` anlegen
+2. **Name:** `url` (oder `slug`)
+3. **Quell-Feld:** `title` (oder das Feld, aus dem der Slug erzeugt wird)
+4. **Sichtbarkeit:** `visible` / `readonly` / `hidden`
 
-Damit die URLs automatisch beim Speichern eines Datensatzes generiert werden, bietet dieses AddOn einen speziellen Feld-Typ:
+Der Slug wird beim Anlegen automatisch aus dem Quellfeld generiert. Bestehende Slugs werden beim Bearbeiten nicht überschrieben.
 
-1.  Gehe in die Felder-Verwaltung deiner Tabelle (z.B. `rex_news`).
-2.  Füge ein Feld vom Typ `virtual_url_slug` hinzu.
-3.  **Konfiguration:**
-    *   **Name:** `url` (oder `slug`)
-    *   **Quell-Feld:** `title` (oder wie dein Titel-Feld heißt). Daraus wird der Slug generiert.
-    *   **Sichtbarkeit:**
-        *   `visible` (Standard): Redakteur kann den Slug sehen und manuell ändern.
-        *   `readonly`: Slug wird angezeigt, kann aber nicht bearbeitet werden.
-        *   `hidden`: Slug wird im Hintegrund generiert und nicht angezeigt.
+#### Option B: Slug-Generator für bestehende Daten
 
-Ab jetzt wird beim Anlegen einer News ("Mein Artikel") automatisch der Slug `mein-artikel` generiert und gespeichert. Änderungen am Titel aktualisieren den Slug nur, wenn dieser leer ist (um Link-Breaks zu vermeiden).
+Unter **Virtual URLs → Slug-Generator**:
 
-### Automatisches Caching
+1. YForm-Tabelle wählen
+2. Quellfeld wählen (z.B. `title`)
+3. Zielfeld wählen (z.B. `url`)
+4. Modus: „Nur leere Felder füllen" oder „Alle überschreiben"
+5. Vorschau prüfen und generieren
 
-Das AddOn überwacht Änderungen an den konfigurierten YForm-Tabellen (`YFORM_DATA_ADDED`, `UPDATED`, `DELETED`).
-Sobald ein Datensatz geändert wird, wird automatisch der **YRewrite Cache** und damit die Sitemap invalidiert. Neue URLs sind somit sofort erreichbar und in der `sitemap.xml` vorhanden.
+Duplikate werden automatisch mit Suffix (`-1`, `-2`, …) versehen.
 
-*   **Renderer Artikel**
-    *   Der REDAXO-Artikel, der technisch geladen wird, wenn ein Treffer gefunden wurde.
-    *   Dieser Artikel sollte ein Modul enthalten, das die Daten ausgibt.
-    *   Wichtig: Dies ist **nicht** der Artikel, den der User in der URL sieht, sondern nur der "Motor", der den Inhalt generiert.
+### 3. Mehrsprachigkeit
 
-*   **Standard Kategorie für Sitemap**
-    *   Der "Haupt-Ort" deiner Datensätze für SEO.
-    *   Nur unter dieser Kategorie (gefolgt vom Trigger und Slug) werden die URLs in der `sitemap.xml` ausgegeben.
-    *   Dies verhindert Duplicate Content, da kontextuelle URLs (z.B. `/produkte/news/...`) ignoriert werden.
+Für mehrsprachige Seiten pro Sprache ein eigenes Profil anlegen:
 
-*   **Sitemap Filter (SQL Where)**
-    *   Ein SQL-Fragment, um zu steuern, welche Datensätze in die Sitemap aufgenommen werden.
-    *   Du kannst dynamische Platzhalter für Datum/Zeit nutzen.
-    *   Beispiele:
-        *   `status = 1`
-        *   `status = 1 AND online_date <= "###NOW###"` (Kleiner/Gleich Jetzt)
-        *   `online_date >= "###NOW -1 YEAR###"` (Nur News aus dem letzten Jahr)
-        *   Verfügbare Platzhalter: `###NOW###`, `###CURRENT_DATE###`, `###CURRENT_TIMESTAMP###`.
-        *   Unterstützt relative Angaben wie `+1 DAY`, `-2 WEEKS`, `+30 MINUTES` (gemäß PHP `strtotime`).
+| Sprache | Trigger | Slug-Feld | Renderer |
+|---|---|---|---|
+| Deutsch | `nachrichten` | `slug_de` | Artikel 10 (DE) |
+| Englisch | `news` | `slug_en` | Artikel 10 (EN) |
 
-*   **Relation/Mount Feld (Optional)**
-    *   Hier kann das Feld angegeben werden, das die Kategorie-Zugehörigkeit regelt (z.B. `category_id`).
-    *   *Geplantes Feature:* Damit wird später sichergestellt, dass die News nur unter der korrekten Kategorie erreichbar ist, oder die Navigation korrekt auf "Aktiv" gesetzt wird.
+Das Routing filtert automatisch nach der aktuellen Sprache. Der Helper nutzt immer das sprachspezifische Profil und fällt auf „Alle Sprachen" zurück.
+
+### 4. Relation-URLs
+
+Für hierarchische URLs (z.B. `/news/sport/mein-artikel`):
+
+1. In der Datentabelle braucht es ein Relation-Feld (z.B. `category_id`)
+2. Die Relationstabelle (z.B. `rex_news_category`) muss ein Feld haben, das als URL-Segment dient (z.B. `name`)
+3. Im Profil alle drei Relation-Felder ausfüllen
+
+Die Relation wird automatisch normalisiert: „Sport & Fitness" → `sport-fitness`.
 
 ## Verwendung im Modul
 
-In deinem Modul (das im Renderer-Artikel eingebunden ist), kannst du auf die Daten zugreifen. Das Objekt ist ein vollständiges `rex_yform_manager_dataset`.
+### Datensatz im Renderer-Artikel abrufen
 
 ```php
-// Prüfen, ob wir im virtuellen Kontext sind
-$news = VirtualUrls::getCurrentData();
+$data = VirtualUrls::getCurrentData();
+$profile = VirtualUrls::getCurrentProfile();
 
-if ($news) {
-    // Zugriff auf den gefundenen Datensatz (YOrm)
-    echo '<h1>' . htmlspecialchars($news->getValue('title')) . '</h1>';
-    
-    // Beispiel für Relation (falls vorhanden)
-    // echo $news->getRelatedDataset('category_id')->getName();
-    
-    echo '<div class="content">' . $news->getValue('description') . '</div>';
+if ($data) {
+    echo '<h1>' . rex_escape($data->getValue('title')) . '</h1>';
+    echo '<div>' . $data->getValue('text') . '</div>';
 } else {
-    echo "Kein Datensatz gefunden.";
+    echo 'Kein Datensatz gefunden.';
 }
 ```
 
+### URLs und Links erzeugen
+
+```php
+// URL für einen Datensatz
+$url = VirtualUrlsHelper::getUrl('rex_news', 42);
+// → "/news/mein-artikel" oder "/news/sport/mein-artikel"
+
+// URL für eine bestimmte Sprache
+$url = VirtualUrlsHelper::getUrl('rex_news', 42, 2); // clang=2
+
+// URL aus bestehendem Dataset
+$dataset = rex_yform_manager_dataset::get(42, 'rex_news');
+$url = VirtualUrlsHelper::getUrlByDataset($dataset);
+
+// HTML-Link erzeugen
+$link = VirtualUrlsHelper::getLink('rex_news', 42, 'Zum Artikel');
+// → <a href="/news/mein-artikel">Zum Artikel</a>
+
+// Link mit CSS-Klassen
+$link = VirtualUrlsHelper::getLink('rex_news', 42, 'Mehr', ['class' => 'btn btn-primary']);
+
+// Alle URLs einer Tabelle (z.B. für Übersichtsseiten)
+$urls = VirtualUrlsHelper::getUrlList('rex_news', 'status = 1', 'date DESC');
+foreach ($urls as $item) {
+    echo '<li><a href="' . $item['url'] . '">' . $item['dataset']->getValue('title') . '</a></li>';
+    // $item['id'], $item['url'], $item['slug'], $item['dataset']
+}
+```
+
+### URL programmatisch testen
+
+```php
+$result = VirtualUrlsHelper::testUrl('/news/sport/mein-artikel', 'wdfv.de');
+
+if ($result['resolved']) {
+    echo 'Datensatz ID: ' . $result['dataset']->getId();
+    echo 'Artikel: ' . $result['article_id'];
+} else {
+    echo 'Fehler: ' . $result['message'];
+}
+```
+
+## Backend-Seiten
+
+| Tab | Beschreibung |
+|---|---|
+| **Profile** | Profilverwaltung (Erstellen, Bearbeiten, Löschen) |
+| **URLs & Tester** | Übersicht aller generierten URLs + interaktiver URL-Tester |
+| **Slug-Generator** | Bulk-Generierung von Slugs für bestehende YForm-Tabellen |
+| **Hilfe** | API-Referenz mit Code-Beispielen |
+
+## Navigation & Active State
+
+Das AddOn erkennt intelligent den Navigations-Kontext:
+
+URL: `/unternehmen/aktuelles/news/mein-artikel`
+
+1. Trigger ist `news`
+2. Das System prüft, ob `/unternehmen/aktuelles` einem echten Artikel entspricht
+3. **Falls ja:** Dieser Artikel wird als aktiver Menüpunkt markiert → Menü bleibt aufgeklappt
+4. **Falls nein:** Der im Profil definierte Renderer-Artikel wird verwendet
+
+## Sitemap
+
+Datensätze werden automatisch in die `sitemap.xml` aufgenommen wenn:
+
+- Eine **Standard Kategorie** im Profil definiert ist
+- Der optionale **Sitemap Filter** den Datensatz einschließt
+
+### Platzhalter im Sitemap-Filter
+
+| Platzhalter | Beschreibung |
+|---|---|
+| `###NOW###` | Aktuelles Datum + Uhrzeit (`Y-m-d H:i:s`) |
+| `###CURRENT_DATE###` | Aktuelles Datum (`Y-m-d`) |
+| `###CURRENT_TIMESTAMP###` | Unix Timestamp |
+
+Relative Angaben: `###NOW -1 YEAR###`, `###NOW +30 MINUTES###`, `###CURRENT_DATE -2 WEEKS###` (gemäß PHP `strtotime`).
+
+**Beispiele:**
+```
+status = 1
+status = 1 AND online_date <= "###NOW###"
+online_date >= "###NOW -1 YEAR###"
+```
+
+## Caching
+
+Das AddOn überwacht `YFORM_DATA_ADDED`, `YFORM_DATA_UPDATED` und `YFORM_DATA_DELETED`. Bei Änderungen an konfigurierten Tabellen wird der YRewrite-Cache automatisch invalidiert.
+
 ## System-Integration
 
-Das AddOn klinkt sich über den Extension Point `PACKAGES_INCLUDED` ein und prüft die aktuelle URL. Findet es einen validen Slug in der konfigurierten Tabelle, manipuliert es die globale `rex::$article_id`, noch bevor REDAXO die Seite rendert.
+- Extension Point `YREWRITE_PREPARE` für URL-Auflösung
+- Extension Point `YREWRITE_DOMAIN_SITEMAP` für Sitemap-Einträge
+- Benötigt: YRewrite ≥ 2.0, YForm ≥ 4.0, REDAXO ≥ 5.10
+
+## API-Referenz
+
+### `VirtualUrls` (Routing)
+
+| Methode | Beschreibung |
+|---|---|
+| `getCurrentData(): ?rex_yform_manager_dataset` | Aktueller Datensatz im Renderer |
+| `getCurrentProfile(): ?array` | Aktuelles Profil im Renderer |
+
+### `VirtualUrlsHelper` (URL-Erzeugung)
+
+| Methode | Beschreibung |
+|---|---|
+| `getUrl(string $table, int $id, int $clang = -1): ?string` | URL für einen Datensatz |
+| `getUrlByDataset(rex_yform_manager_dataset $d, int $clang = -1): ?string` | URL aus Dataset |
+| `getLink(string $table, int $id, string $label, array $attrs, int $clang): string` | HTML-Link |
+| `getUrlList(string $table, string $where, string $order, int $clang): array` | Alle URLs einer Tabelle |
+| `testUrl(string $url, ?string $domain): array` | URL testen |
+| `getProfileByTable(string $table, int $clang = -1): ?array` | Profil für Tabelle+Sprache |
+| `getAllProfiles(): array` | Alle Profile |
+| `clearCache(): void` | Profil-Cache leeren |
+
+## Lizenz
+
+MIT
