@@ -74,7 +74,7 @@ if ($func === 'edit' || $func === 'add') {
     $field->setLabel('Slug Feld Name');
     $field->setNotice('z.B. code oder url');
     $field->setAttribute('class', 'form-control virtual-urls-column-select');
-    $field->setAttribute('data-selected', $func === 'edit' ? $form->getSql()->getValue('url_field') : '');
+    $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('url_field') : '');
     $select = $field->getSelect();
     $select->addOption('Bitte Tabelle wählen...', '');
 
@@ -89,7 +89,7 @@ if ($func === 'edit' || $func === 'add') {
     $field->setLabel('Relation Feld (Optional)');
     $field->setNotice('Feld in der Datentabelle, das auf die Relationstabelle verweist, z.B. category_id');
     $field->setAttribute('class', 'form-control virtual-urls-column-select');
-    $field->setAttribute('data-selected', $func === 'edit' ? $form->getSql()->getValue('relation_field') : '');
+    $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('relation_field') : '');
     $select = $field->getSelect();
     $select->addOption('Bitte Tabelle wählen...', '');
 
@@ -110,7 +110,7 @@ if ($func === 'edit' || $func === 'add') {
     $field->setLabel('Relation Slug Feld (Optional)');
     $field->setNotice('Feld in der Relationstabelle für den URL-Teil, z.B. name oder url_slug. Wird automatisch normalisiert.');
     $field->setAttribute('class', 'form-control virtual-urls-relation-column-select');
-    $field->setAttribute('data-selected', $func === 'edit' ? $form->getSql()->getValue('relation_slug_field') : '');
+    $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('relation_slug_field') : '');
     $select = $field->getSelect();
     $select->addOption('Bitte Relationstabelle wählen...', '');
 
@@ -137,7 +137,7 @@ if ($func === 'edit' || $func === 'add') {
     $field->setLabel('SEO Title Feld');
     $field->setNotice('Spalte in der YForm-Tabelle für den Meta-Title (z.B. title oder name). Leer lassen für Standard.');
     $field->setAttribute('class', 'form-control virtual-urls-column-select');
-    $field->setAttribute('data-selected', $func === 'edit' ? $form->getSql()->getValue('seo_title_field') : '');
+    $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('seo_title_field') : '');
     $select = $field->getSelect();
     $select->addOption('Bitte Tabelle wählen...', '');
 
@@ -145,7 +145,7 @@ if ($func === 'edit' || $func === 'add') {
     $field->setLabel('SEO Description Feld');
     $field->setNotice('Spalte in der YForm-Tabelle für die Meta-Description (z.B. description oder text). HTML wird entfernt und Text gekürzt.');
     $field->setAttribute('class', 'form-control virtual-urls-column-select');
-    $field->setAttribute('data-selected', $func === 'edit' ? $form->getSql()->getValue('seo_description_field') : '');
+    $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('seo_description_field') : '');
     $select = $field->getSelect();
     $select->addOption('Bitte Tabelle wählen...', '');
 
@@ -153,7 +153,7 @@ if ($func === 'edit' || $func === 'add') {
     $field->setLabel('SEO Image Feld');
     $field->setNotice('Spalte in der YForm-Tabelle für das Meta-Image (z.B. image oder teaser_image).');
     $field->setAttribute('class', 'form-control virtual-urls-column-select');
-    $field->setAttribute('data-selected', $func === 'edit' ? $form->getSql()->getValue('seo_image_field') : '');
+    $field->setAttribute('data-selected', $form->isEditMode() ? $form->getSql()->getValue('seo_image_field') : '');
     $select = $field->getSelect();
     $select->addOption('Bitte Tabelle wählen...', '');
 
