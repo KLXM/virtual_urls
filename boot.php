@@ -9,11 +9,11 @@ if (rex_addon::get('yform')->isAvailable()) {
 // 3. Frontend / YRewrite integration
 if (rex_addon::get('yrewrite')->isAvailable()) {
     
-    // Routing Logic (Frontend only)
+    // Routing Logic via YREWRITE_PREPARE (fires when YRewrite can't resolve a URL)
     if (!rex::isBackend()) {
-        rex_extension::register('PACKAGES_INCLUDED', function () {
-            VirtualUrls::handle();
-        }, rex_extension::LATE);
+        rex_extension::register('YREWRITE_PREPARE', function (rex_extension_point $ep) {
+            return VirtualUrls::handle($ep);
+        });
     }
     
     // Sitemap Integration (Global, as sitemap generation might be triggered from anywhere)
