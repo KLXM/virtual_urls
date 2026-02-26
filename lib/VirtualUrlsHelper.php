@@ -130,6 +130,11 @@ class VirtualUrlsHelper
             return [];
         }
 
+        // Nur YForm-Manager-Tabellen sind erlaubt
+        if (rex_yform_manager_table::get($table) === null) {
+            return [];
+        }
+
         $query = rex_yform_manager_dataset::query($table);
         if ($where !== '') {
             $query->whereRaw($where);
