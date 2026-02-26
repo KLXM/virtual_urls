@@ -8,6 +8,7 @@ use rex_escape;
 use rex_sql;
 use rex_string;
 use rex_yform_manager_dataset;
+use rex_yform_manager_table;
 
 /**
  * Helper-Klasse zum Erzeugen von virtuellen URLs und Links.
