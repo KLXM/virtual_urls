@@ -65,12 +65,8 @@ if ($func === 'edit' || $func === 'add') {
     $field->setAttribute('data-ajax-url', rex_url::backendPage('virtual_urls/ajax.columns'));
     $select = $field->getSelect();
     $select->addOption('Bitte wählen...', '');
-    $tables = rex_sql::factory()->getArray('SHOW TABLES');
-    foreach ($tables as $table) {
-        $tableName = current($table);
-        if (str_starts_with($tableName, rex::getTablePrefix())) {
-            $select->addOption($tableName, $tableName);
-        }
+    foreach (rex_yform_manager_table::getAll() as $yformTable) {
+        $select->addOption($yformTable->getTableName(), $yformTable->getTableName());
     }
 
     // Im Edit-Modus Spalten der gespeicherten Tabellen vorladen (damit rex_form die Werte speichern kann)
@@ -133,11 +129,8 @@ if ($func === 'edit' || $func === 'add') {
     $field->setAttribute('id', 'virtual-urls-relation-table');
     $select = $field->getSelect();
     $select->addOption('Keine Relation', '');
-    foreach ($tables as $table) {
-        $tableName = current($table);
-        if (str_starts_with($tableName, rex::getTablePrefix())) {
-            $select->addOption($tableName, $tableName);
-        }
+    foreach (rex_yform_manager_table::getAll() as $yformTable) {
+        $select->addOption($yformTable->getTableName(), $yformTable->getTableName());
     }
 
     $field = $form->addSelectField('relation_slug_field');
