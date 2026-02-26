@@ -117,6 +117,10 @@ class VirtualUrlsHelper
      */
     public static function getUrlList(string $table, string $where = '', string $orderBy = '', int $clangId = -1): array
     {
+        if ($table === '') {
+            return [];
+        }
+
         if ($clangId < 0) {
             $clangId = rex_clang::getCurrentId();
         }
